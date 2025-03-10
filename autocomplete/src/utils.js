@@ -1,12 +1,14 @@
 import { FRUITS } from "./data.js";
-export const getSuggestions = (keyword) => {
-  const result = FRUITS.filter(
+export const getSuggestions = (keyword, page, itemPerPage = 40) => {
+  const filteredResults = FRUITS.filter(
     (i) =>
       i.substring(0, keyword.length).toLowerCase() === keyword.toLowerCase()
   );
-
+  const startIndex = page * itemPerPage;
+  const endIndex = startIndex + itemPerPage;
+  const paginatedResults = filteredResults.slice(startIndex, endIndex);
   return new Promise((res) => {
-    setTimeout(() => res(result), 2000);
+    setTimeout(() => res(paginatedResults), 2000);
   });
 };
 

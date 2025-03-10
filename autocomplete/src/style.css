@@ -31,6 +31,9 @@ body {
   max-height: 300px;
   overflow-y: auto;
   display: none;
+  max-height: 300px;
+  overflow-y: auto;
+  position: relative;
 }
 #resultList.show {
   display: block;
