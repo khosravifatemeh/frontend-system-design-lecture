@@ -1,4 +1,5 @@
-import { getSuggestions, debounce } from "./utils.js";
+import { getSuggestions, debounce, getInitialResults } from "./utils.js";
+import { Cache } from "./cache.js";
 const inputBox = document.getElementById("search-input");
 const resultBox = document.getElementById("resultList");
 const MIN_QUERY_LENGTH = 3;
@@ -26,13 +27,18 @@ const removeLoading = () => {
     loadEl.remove();
   }
 };
-
+const cache = new Cache();
 const handleSearch = async (keyword) => {
   try {
     fetchPage = 0;
     showLoading();
     lastQuery = keyword;
     virtualPage = 0;
+    if (cache.hasQuery(keyword)) {
+      allResults = cache.getResults(keyword);
+      renderVirtualizedList();
+      return;
+    }
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error("Error"));
@@ -43,7 +49,9 @@ const handleSearch = async (keyword) => {
       timeoutPromise,
     ]);
     allResults = result || [];
-
+    if (allResults.length) {
+      cache.addResults(keyword, allResults);
+    }
     renderVirtualizedList(result);
   } catch (error) {
     resultBox.innerHTML = "<p class='error'>An error occurred</p>";
@@ -83,9 +91,17 @@ const loadMore = async () => {
   try {
     showLoading();
     fetchPage++;
+    const cacheKey = `${lastQuery}_page_${fetchPage}`;
+    if (cache.hasQuery(cacheKey)) {
+      const cachedResults = cache.getResults(cacheKey);
+      allResults = [...allResults, ...cachedResults];
+      renderVirtualizedList();
+      return;
+    }
     const newResults = await getSuggestions(lastQuery, fetchPage);
     if (newResults?.length) {
       allResults = [...allResults, ...newResults];
+      cache.addResults(cacheKey, newResults);
       renderVirtualizedList();
     }
   } catch (error) {
@@ -132,8 +148,19 @@ const removeResult = () => {
   resultBox.innerHTML = "";
   resultBox.classList.remove("show");
 };
-(() => {
+
+const handleFocus = () => {
+  if (!inputBox.value.trim()) {
+    allResults = cache.getResults("");
+    renderVirtualizedList();
+  }
+};
+
+(async () => {
+  const initialResults = await getInitialResults();
+  cache.addResults("", initialResults);
   inputBox.focus();
+  inputBox.addEventListener("focus", handleFocus);
   inputBox.addEventListener("input", debounce(handleInputChange, 300));
   // inputBox.addEventListener("blur", removeResult);
   resultBox.addEventListener("click", (e) => {

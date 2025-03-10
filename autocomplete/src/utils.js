@@ -11,6 +11,13 @@ export const getSuggestions = (keyword, page, itemPerPage = 40) => {
     setTimeout(() => res(paginatedResults), 2000);
   });
 };
+export const getInitialResults = () => {
+  return new Promise((res) => {
+    setTimeout(() => {
+      return res(FRUITS.slice(0, 20));
+    }, 2000);
+  });
+};
 
 export const debounce = (fn, delay) => {
   let timeoutId;
