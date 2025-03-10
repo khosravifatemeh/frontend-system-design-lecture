@@ -141,7 +141,7 @@ const observer = new IntersectionObserver(
 
 const handleInputChange = (event) => {
   const value = event.target.value;
-  // if (value?.length >= MIN_QUERY_LENGTH) handleSearch(value);
+  if (value?.length >= MIN_QUERY_LENGTH) handleSearch(value);
   handleSearch(value);
 };
 
@@ -172,7 +172,7 @@ const handleNetworkChange = () => {
   window.addEventListener("online", handleNetworkChange);
   window.addEventListener("offline", handleNetworkChange);
   inputBox.addEventListener("input", debounce(handleInputChange, 300));
-  // inputBox.addEventListener("blur", removeResult);
+  inputBox.addEventListener("blur", removeResult);
   resultBox.addEventListener("click", (e) => {
     if (e.target.classList.contains("result-item")) {
       inputBox.value = e.target.innerText;

@@ -14,7 +14,7 @@ export const getSuggestions = (keyword, page, itemPerPage = 40) => {
 export const getInitialResults = () => {
   return new Promise((res) => {
     setTimeout(() => {
-      return res(FRUITS.slice(0, 20));
+      return res(FRUITS.slice(0, 40));
     }, 2000);
   });
 };
