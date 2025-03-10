@@ -1,5 +1,4 @@
 Autocomplete Component Guide
-----------------------------
 
 ### Customization and Reusability
 
