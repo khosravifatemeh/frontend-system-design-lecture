@@ -45,3 +45,29 @@ body {
 .result-item:hover {
   background-color: #f8f9fa;
 }
+.offline-indicator {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  background-color: #ff4444;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.hidden {
+  display: none;
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.offline-indicator:not(.hidden) {
+  animation: slideIn 0.3s ease-out;
+}

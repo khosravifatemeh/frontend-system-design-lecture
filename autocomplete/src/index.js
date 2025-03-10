@@ -2,6 +2,7 @@ import { getSuggestions, debounce, getInitialResults } from "./utils.js";
 import { Cache } from "./cache.js";
 const inputBox = document.getElementById("search-input");
 const resultBox = document.getElementById("resultList");
+const offlineIndicator = document.getElementById("offline-indicator");
 const MIN_QUERY_LENGTH = 3;
 const TIMEOUT_DURATION = 3000;
 const ITEMS_PER_Virtualize_PAGE = 20;
@@ -155,12 +156,21 @@ const handleFocus = () => {
     renderVirtualizedList();
   }
 };
-
+const handleNetworkChange = () => {
+  if (!navigator.onLine) {
+    offlineIndicator.classList.remove("hidden");
+  } else {
+    offlineIndicator.classList.add("hidden");
+  }
+};
 (async () => {
   const initialResults = await getInitialResults();
   cache.addResults("", initialResults);
+  handleNetworkChange();
   inputBox.focus();
   inputBox.addEventListener("focus", handleFocus);
+  window.addEventListener("online", handleNetworkChange);
+  window.addEventListener("offline", handleNetworkChange);
   inputBox.addEventListener("input", debounce(handleInputChange, 300));
   // inputBox.addEventListener("blur", removeResult);
   resultBox.addEventListener("click", (e) => {
