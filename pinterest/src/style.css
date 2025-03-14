@@ -1,0 +1,68 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  position: relative;
+}
+.masonry-grid {
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: min-content; /* This will make it expand with content */
+}
+.masonry-column {
+  position: absolute;
+  top: 0;
+  height: fit-content;
+}
+
+.pin {
+  width: 100%;
+  margin-bottom: 16px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  break-inside: avoid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pin-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 0; /* Height will be determined by padding-bottom */
+  overflow: hidden;
+}
+
+.pin-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(10px);
+  transition: transform 0.3s ease;
+  transition: filter 0.3s ease;
+}
+.pin-image.loaded {
+  filter: blur(0);
+}
+
+.pin-image:hover {
+  transform: scale(1.05);
+}
+.pin h3,
+.pin p {
+  padding: 8px 16px;
+  margin: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+}
+
+.hidden {
+  display: none;
+}
