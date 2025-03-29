@@ -1,43 +1,36 @@
 import { Masonry } from "./masonry.js";
 import { fetchPins } from "./utils.js";
+import { VirtualScroller } from "./virtual-scroller.js";
 
 const container = document.getElementById("masonry-grid");
-const loadingElement = document.getElementById("loading");
 let isLoading = false;
 let page = 1;
 
 const masonryView = new Masonry(container, { columnWidth: 300, gap: 16 });
-
-function createObservers() {
-  const loadMoreObserver = new IntersectionObserver(
-    (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && !isLoading) {
-        loadPins();
-      }
-    },
-    {
-      rootMargin: "200px",
+const loadMoreObserver = new IntersectionObserver(
+  async (entries) => {
+    const target = entries[0];
+    if (target.isIntersecting && !isLoading) {
+      loadMoreObserver.disconnect();
+      await loadPins();
     }
-  );
-
-  return { loadMoreObserver };
-}
-
-const init = async () => {
-  const { loadMoreObserver } = createObservers();
-  loadMoreObserver.observe(loadingElement);
-  await loadPins();
-};
+  },
+  {
+    rootMargin: "200px",
+  }
+);
+const virtualScroller = new VirtualScroller(masonryView, {
+  onLastPin: (lastPin) => {
+    loadMoreObserver.observe(lastPin);
+  },
+});
 
 const loadPins = async () => {
   if (isLoading) return;
   isLoading = true;
   try {
     const pins = await fetchPins(page);
-    pins.forEach((element) => {
-      masonryView.addPin(element);
-    });
+    virtualScroller.setItems(pins);
     page++;
   } catch (error) {
     console.log(error);
@@ -47,5 +40,8 @@ const loadPins = async () => {
 };
 
 (() => {
-  init();
+  loadPins();
+  document.addEventListener("scroll", () =>
+    virtualScroller.onScroll(window.scrollY)
+  );
 })();
