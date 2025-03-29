@@ -8,6 +8,7 @@ export class Masonry {
     this.maxRecycledNodes = options.maxRecycledNodes || 100;
     this.gap = options.gap || 16;
     this.recycledNodes = new Map();
+    this.pins = [];
     this.init();
   }
 
@@ -28,21 +29,41 @@ export class Masonry {
     this.container.appendChild(column);
     return column;
   }
-  addPin(pin) {
+
+  positionedPins(pins) {
+    const positions = [];
+    const columnHeights = this.columns.map((x) => x.height);
+
+    for (const pin of pins) {
+      const columnIndex = columnHeights.indexOf(Math.min(...columnHeights));
+      const top = columnHeights[columnIndex];
+      const height = this.columnWidth / pin.aspectRatio + this.gap;
+      columnHeights[columnIndex] += height;
+      positions.push({ columnIndex, top, height, pinData: pin });
+    }
+    return positions;
+  }
+
+  addPin(pin, node) {
     const shortestColumn = getShortestColumn(this.columns);
-    const pinElement = this.createPinElement(pin);
+    const pinElement = this.createPinElement(pin.pinData);
+    if (!node) {
+      shortestColumn.element.appendChild(pinElement);
+      shortestColumn.height += pinElement.offsetHeight + this.gap;
 
-    shortestColumn.element.appendChild(pinElement);
-    shortestColumn.height += pinElement.offsetHeight + this.gap;
-
-    const tallestHeight = Math.max(...this.columns.map((col) => col.height));
-    this.container.style.height = `${tallestHeight}px`;
+      const tallestHeight = Math.max(...this.columns.map((col) => col.height));
+      this.container.style.height = `${tallestHeight}px`;
+    } else {
+      node.replaceWith(pinElement);
+    }
   }
 
   createPinElement(pin) {
     const element = document.createElement("div");
-    element.className = "pin";
     element.dataset.pinId = pin.id;
+    element.className = "pin";
+    const element1 = document.createElement("div");
+    element1.className = "pin-wrapper";
 
     // Create image wrapper for aspect ratio preservation
     const imageWrapper = document.createElement("div");
@@ -51,16 +72,8 @@ export class Masonry {
 
     const image = document.createElement("img");
     image.className = "pin-image";
-    image.srcset = `
-    ${pin.images.small} 300W,
-    ${pin.images.medium} 600w,
-    ${pin.images.large} 900w
-    `.trim();
-    image.sizes = `
-  (max-width:600px) 300px,
-  (max-width:900px) 600px,
-  900px
-    `.trim();
+    image.srcset = this.createSrcset(pin.images);
+    image.sizes = this.createSizes();
     image.alt = pin.title;
     image.loading = "lazy";
     image.onload = () => {
@@ -71,10 +84,30 @@ export class Masonry {
     };
 
     imageWrapper.appendChild(image);
-    element.appendChild(imageWrapper);
+    element1.appendChild(imageWrapper);
+    element.appendChild(element1);
+
     const title = document.createElement("h3");
     title.textContent = pin.title;
-    element.appendChild(title);
+    element1.appendChild(title);
     return element;
+  }
+  createSrcset(images) {
+    return `
+    ${images.small} 300W,
+    ${images.medium} 600w,
+    ${images.large} 900w
+    `.trim();
+  }
+  createSizes() {
+    return `
+  (max-width:600px) 300px,
+  (max-width:900px) 600px,
+  900px
+    `.trim();
+  }
+  removeElement(element, index) {
+    element.style.height = element.offsetHeight;
+    element.firstChild.remove();
   }
 }
